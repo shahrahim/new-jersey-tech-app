@@ -1,10 +1,40 @@
 import logo from './logo.svg';
 import './App.css';
-import React from "react"
+import React, {useState, useEffect} from "react"
+import axios from "axios"
+
+const ClientProfiles = () => {
+
+  const [clients, setClients] = useState([]);
+
+  const fetchClients = () => {
+    axios.get("http://localhost:8080/clients").then(res => {
+      console.log(res);
+      setClients(res.data);
+    });
+  }
+
+  useEffect(() => {
+    fetchClients();
+  }, []);
+
+  return clients.map((client, index) => {
+
+    return (
+      <div key={index}>
+        <h1>{client.name}</h1>
+        <p>{client.email}</p>
+      </div>
+    )
+  })
+};
 
 function App() {
   return (
-    <div className="App"></div>
+    <div className="App">
+      <ClientProfiles />
+
+    </div>
   );
 }
 
