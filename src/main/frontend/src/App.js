@@ -2,6 +2,11 @@ import logo from './logo.svg';
 import './App.css';
 import React, {useState, useEffect} from "react"
 import axios from "axios"
+import AppNavbar from './AppNavbar';
+import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
+import Registration from "./Registration"
+import ClassList from './ClassList';
+import Home from "./Home";
 
 const ClientProfiles = () => {
 
@@ -31,10 +36,16 @@ const ClientProfiles = () => {
 
 function App() {
   return (
-    <div className="App">
-      <ClientProfiles />
-
-    </div>
+    <Router>
+      <div>
+        <AppNavbar />
+        <Switch>
+          <Route path="/" exact component={Home} />
+          <Route path="/registration" exact component={Registration} />
+          <Route path="/classList" exact component={ClassList} />
+        </Switch>
+      </div>
+    </Router>
   );
 }
 
