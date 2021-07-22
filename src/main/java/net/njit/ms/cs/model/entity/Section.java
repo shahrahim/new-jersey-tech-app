@@ -26,14 +26,14 @@ public class Section {
     private String sectionNumber;
 
     @ManyToMany
-//    @JoinTable(
-//            name = "Teach",
-//            joinColumns = {
-//                    @JoinColumn(name = "courseNumber"),
-//                    @JoinColumn(name = "sectionNumber"),
-//                    @JoinColumn(name = "facultySsn")},
-//            inverseJoinColumns = @JoinColumn(name = "teachingAssistantSsn"))
     private Set<TeachingAssistant> teachingAssistants;
+
+    @ManyToMany
+    private Set<Student> students;
+
+    @ManyToMany
+    private Set<Room> rooms;
+
 
     private Integer maxEnroll;
 
