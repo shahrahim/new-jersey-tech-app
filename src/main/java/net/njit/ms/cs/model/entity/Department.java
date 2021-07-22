@@ -15,9 +15,8 @@ public class Department {
     @Id
     private String code;
 
-    @NotNull
     @ManyToOne
-    @JoinColumn(name="buildingNumber", nullable=false)
+    @JoinColumn(name="buildingNumber")
     private Building building;
 
     @OneToMany(mappedBy="department")

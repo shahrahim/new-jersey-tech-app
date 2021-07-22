@@ -6,6 +6,7 @@ import lombok.Setter;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -16,6 +17,7 @@ public class Student {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull
     @ManyToOne
     @JoinColumn(name="departmentCode", nullable=false)
     private Department department;
@@ -31,6 +33,10 @@ public class Student {
 
     @Pattern(regexp="^\\d{4}$",message="must be a year")
     private String year;
+
+    @ManyToMany
+    private Set<Section> sections;
+
 
 
 }

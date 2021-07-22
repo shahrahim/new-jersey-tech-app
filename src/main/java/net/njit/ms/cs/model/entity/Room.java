@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.Set;
 
 @Entity
 @IdClass(RoomId.class)
@@ -18,6 +19,9 @@ public class Room {
 
     @Id
     private String number;
+
+    @ManyToMany
+    private Set<Section> sections;
 
     private Integer capacity;
 

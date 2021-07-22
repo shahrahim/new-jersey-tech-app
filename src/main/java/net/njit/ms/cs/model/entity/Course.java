@@ -12,7 +12,7 @@ import java.util.Set;
 public class Course {
 
     @Id
-    private String number;
+    private Long number;
 
     @ManyToOne
     @JoinColumn(name = "departmentCode", nullable = false)
