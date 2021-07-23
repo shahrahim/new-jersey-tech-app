@@ -15,5 +15,5 @@ public class DepartmentDto {
 
     private String chairSsn;
 
-    private Long buildingNumber;
+    private Integer buildingNumber;
 }

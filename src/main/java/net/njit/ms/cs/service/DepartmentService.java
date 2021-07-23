@@ -3,6 +3,7 @@ package net.njit.ms.cs.service;
 import lombok.extern.slf4j.Slf4j;
 import net.njit.ms.cs.exception.BadRequestRequestException;
 import net.njit.ms.cs.exception.ResourceNotCreatedException;
+import net.njit.ms.cs.exception.ResourceNotDeletedException;
 import net.njit.ms.cs.exception.ResourceNotFoundException;
 import net.njit.ms.cs.model.dto.DepartmentDto;
 import net.njit.ms.cs.model.entity.Building;
@@ -68,7 +69,7 @@ public class DepartmentService {
             String message = String.format(
                     "Something went wrong deleting staff with code: %s to backend", code);
             log.error("{} {}", message, e.getMessage());
-            throw new ResourceNotCreatedException(message);
+            throw new ResourceNotDeletedException(message);
         }
     }
 
@@ -92,10 +93,10 @@ public class DepartmentService {
             throw new BadRequestRequestException(message);
         }
         validateDepartmentChair(departmentDto.getChairSsn());
-        validateDepartmentBuilding(departmentDto.getBuildingNumber());
     }
 
     private void validateDepartmentChair(String chairSsn) {
+        System.out.println("Chair" + chairSsn);
         if (chairSsn != null && !chairSsn.equals("")) {
             if (!this.facultyRepository.existsById(chairSsn)) {
                 String message = String.format("Chair Ssn: %s does not exist", chairSsn);
@@ -105,17 +106,7 @@ public class DepartmentService {
         }
     }
 
-    private void validateDepartmentBuilding(Long buildingNumber) {
-        if (isBuildingNumberDefined(buildingNumber)) {
-            if (!this.buildingRepository.existsById(buildingNumber)) {
-                String message = String.format("Building number: %s does not exist", buildingNumber);
-                log.error(message);
-                throw new BadRequestRequestException(message);
-            }
-        }
-    }
-
-    private boolean isBuildingNumberDefined(Long buildingNumber) {
+    private boolean isBuildingNumberDefined(Integer buildingNumber) {
         return buildingNumber != null;
     }
 
@@ -126,9 +117,10 @@ public class DepartmentService {
     }
 
     private Department getDepartmentForRequest(Department department, DepartmentDto departmentDto) {
-        Long buildingNumber = departmentDto.getBuildingNumber();
+        Integer buildingNumber = departmentDto.getBuildingNumber();
 
         if(isBuildingNumberDefined(departmentDto.getBuildingNumber())) {
+            System.out.println("Building num" + departmentDto.getBuildingNumber());
             Building building = this.buildingRepository.findById(buildingNumber).orElseThrow(()  ->
                     new ResourceNotFoundException(String.format("Building number %s does not exist", buildingNumber)));
             department.setBuilding(building);
