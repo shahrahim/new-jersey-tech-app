@@ -1,5 +1,6 @@
 package net.njit.ms.cs.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,13 +14,13 @@ import java.util.Set;
 public class Building {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer number;
 
-    @OneToMany(mappedBy="building")
+    @JsonBackReference
+    @OneToMany(mappedBy="building", cascade = CascadeType.ALL)
     private Set<Department> departments;
 
-    @OneToMany(mappedBy="building")
+    @OneToMany(mappedBy="building", cascade = CascadeType.ALL)
     private Set<Room> rooms;
 
     @NotNull

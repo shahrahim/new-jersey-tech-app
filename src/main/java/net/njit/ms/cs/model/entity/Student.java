@@ -2,6 +2,7 @@ package net.njit.ms.cs.model.entity;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Cascade;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -19,6 +20,7 @@ public class Student {
 
     @NotNull
     @ManyToOne
+    @Cascade(value={org.hibernate.annotations.CascadeType.ALL})
     @JoinColumn(name="departmentCode", nullable=false)
     private Department department;
 
