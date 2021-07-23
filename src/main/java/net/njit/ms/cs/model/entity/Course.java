@@ -2,6 +2,7 @@ package net.njit.ms.cs.model.entity;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Cascade;
 
 import javax.persistence.*;
 import java.util.Set;
@@ -18,7 +19,7 @@ public class Course {
     @JoinColumn(name = "departmentCode", nullable = false)
     private Department department;
 
-    @OneToMany(mappedBy="course")
+    @OneToMany(mappedBy="course", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Section> sections;
 
     private String name;

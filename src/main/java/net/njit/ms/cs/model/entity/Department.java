@@ -1,10 +1,10 @@
 package net.njit.ms.cs.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.util.Set;
 
 @Entity
@@ -16,13 +16,14 @@ public class Department {
     private String code;
 
     @ManyToOne
-    @JoinColumn(name="buildingNumber")
+    @JsonManagedReference
+    @JoinColumn(name = "buildingNumber")
     private Building building;
 
-    @OneToMany(mappedBy="department")
+    @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Student> students;
 
-    @OneToMany(mappedBy="department")
+    @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Course> courses;
 
     @ManyToMany

@@ -6,6 +6,7 @@ import net.njit.ms.cs.exception.ResourceNotCreatedException;
 import net.njit.ms.cs.exception.ResourceNotDeletedException;
 import net.njit.ms.cs.exception.ResourceNotFoundException;
 import net.njit.ms.cs.model.dto.DepartmentDto;
+import net.njit.ms.cs.model.entity.Building;
 import net.njit.ms.cs.model.entity.Department;
 import net.njit.ms.cs.repository.BuildingRepository;
 import net.njit.ms.cs.repository.DepartmentRepository;
@@ -44,9 +45,13 @@ public class DepartmentServiceTest {
 
     private Department department;
 
+    private Building building;
+
     private DepartmentDto departmentDto;
 
     private final String CODE = "CS";
+
+    private final Integer BUILDING_NUMBER = 123;
 
     @BeforeEach
     void init() {
@@ -56,10 +61,14 @@ public class DepartmentServiceTest {
         departmentDto = new DepartmentDto();
         departmentDto.setCode(CODE);
         departmentDto.setName(name);
+        departmentDto.setBuildingNumber(BUILDING_NUMBER);
 
         department = new Department();
         department.setCode(CODE);
         department.setName(name);
+
+        building = new Building();
+        building.setNumber(BUILDING_NUMBER);
     }
 
     @Test
@@ -99,6 +108,7 @@ public class DepartmentServiceTest {
     @Test
     public void testGetCreatedStaff() {
         Mockito.when(this.departmentRepository.existsById(any(String.class))).thenReturn(false);
+        Mockito.when(this.buildingRepository.findById(any(Integer.class))).thenReturn(Optional.of(building));
         Mockito.when(this.departmentRepository.save(any(Department.class))).thenReturn(department);
 
         Department foundDepartment = this.departmentService.getCreatedDepartment(departmentDto);
@@ -120,6 +130,7 @@ public class DepartmentServiceTest {
     @Test
     public void testGetCreatedDepartment_throws_ResourceNotCreatedException() {
         Mockito.when(this.departmentRepository.existsById(any(String.class))).thenReturn(false);
+        Mockito.when(this.buildingRepository.findById(any(Integer.class))).thenReturn(Optional.of(building));
         Mockito.when(this.departmentRepository.save(any(Department.class))).thenThrow(new RuntimeException());
 
         Assertions.assertThrows(ResourceNotCreatedException.class, () -> {
@@ -178,6 +189,7 @@ public class DepartmentServiceTest {
         departmentDto.setName(newName);
 
         Mockito.when(this.departmentRepository.findById(any(String.class))).thenReturn(Optional.of(department));
+        Mockito.when(this.buildingRepository.findById(any(Integer.class))).thenReturn(Optional.of(building));
         Mockito.when(this.departmentRepository.save(any(Department.class))).thenReturn(department);
 
         Department foundDepartment = this.departmentService.getUpdatedDepartment(CODE, departmentDto);

@@ -119,8 +119,11 @@ public class DepartmentService {
     private Department getDepartmentForRequest(Department department, DepartmentDto departmentDto) {
         Integer buildingNumber = departmentDto.getBuildingNumber();
 
-        if(isBuildingNumberDefined(departmentDto.getBuildingNumber())) {
-            System.out.println("Building num" + departmentDto.getBuildingNumber());
+        if(!isBuildingNumberDefined(buildingNumber)) {
+            String message = String.format("Building Must be defined: %s does not exist", buildingNumber);
+            log.error(message);
+            throw new BadRequestRequestException(message);
+        } else {
             Building building = this.buildingRepository.findById(buildingNumber).orElseThrow(()  ->
                     new ResourceNotFoundException(String.format("Building number %s does not exist", buildingNumber)));
             department.setBuilding(building);
