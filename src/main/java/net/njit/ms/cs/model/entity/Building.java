@@ -14,7 +14,7 @@ public class Building {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long number;
+    private Integer number;
 
     @OneToMany(mappedBy="building")
     private Set<Department> departments;

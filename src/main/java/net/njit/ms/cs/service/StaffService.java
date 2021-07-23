@@ -3,6 +3,7 @@ package net.njit.ms.cs.service;
 import lombok.extern.slf4j.Slf4j;
 import net.njit.ms.cs.exception.BadRequestRequestException;
 import net.njit.ms.cs.exception.ResourceNotCreatedException;
+import net.njit.ms.cs.exception.ResourceNotDeletedException;
 import net.njit.ms.cs.exception.ResourceNotFoundException;
 import net.njit.ms.cs.model.dto.StaffDto;
 import net.njit.ms.cs.model.entity.Staff;
@@ -41,7 +42,6 @@ public class StaffService {
 
     public Staff getUpdatedStaff(String ssn, StaffDto staffDto) {
         this.getStaffById(ssn);
-
         if (!ssn.equals(staffDto.getSsn())) {
             String message = String.format("Staff ssn: %s cannot be changed in update", ssn);
             log.error(message);
@@ -57,7 +57,7 @@ public class StaffService {
             String message = String.format(
                     "Something went wrong deleting staff with ssn: %s to backend", ssn);
             log.error("{} {}", message, e.getMessage());
-            throw new ResourceNotCreatedException(message);
+            throw new ResourceNotDeletedException(message);
         }
     }
 
