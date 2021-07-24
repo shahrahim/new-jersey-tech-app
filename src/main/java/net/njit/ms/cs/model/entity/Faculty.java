@@ -20,7 +20,7 @@ public class Faculty {
 
     private Integer courseLoad;
 
-    @OneToMany(mappedBy = "faculty", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "faculty", cascade = CascadeType.ALL)
     private Set<Section> sections;
 
     @ManyToMany
