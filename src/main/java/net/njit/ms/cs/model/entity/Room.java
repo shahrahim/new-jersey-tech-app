@@ -1,5 +1,6 @@
 package net.njit.ms.cs.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -7,18 +8,17 @@ import javax.persistence.*;
 import java.util.Set;
 
 @Entity
-@IdClass(RoomId.class)
 @Getter
 @Setter
 public class Room {
 
     @Id
-    @ManyToOne
-    @JoinColumn(name = "buildingNumber", nullable = false)
-    private Building building;
+    private Integer roomNumber;
 
-    @Id
-    private String number;
+    @ManyToOne
+    @JsonManagedReference
+    @JoinColumn(name = "buildingNumber")
+    private Building building;
 
     @ManyToMany
     private Set<Section> sections;

@@ -20,6 +20,7 @@ public class Building {
     @OneToMany(mappedBy="building", cascade = CascadeType.ALL)
     private Set<Department> departments;
 
+    @JsonBackReference
     @OneToMany(mappedBy="building", cascade = CascadeType.ALL)
     private Set<Room> rooms;
 

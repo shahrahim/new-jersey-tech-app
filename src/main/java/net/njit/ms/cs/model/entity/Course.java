@@ -19,7 +19,7 @@ public class Course {
     @JoinColumn(name = "departmentCode", nullable = false)
     private Department department;
 
-    @OneToMany(mappedBy="course", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy="course", cascade = CascadeType.ALL)
     private Set<Section> sections;
 
     private String name;
