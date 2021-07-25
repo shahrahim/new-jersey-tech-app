@@ -7,23 +7,20 @@ import javax.persistence.*;
 import java.util.Set;
 
 @Entity
-@IdClass(SectionId.class)
 @Getter
 @Setter
 public class Section {
 
     @Id
+    private Integer number;
+
     @ManyToOne
     @JoinColumn(name = "facultySsn", nullable = false)
     private Faculty faculty;
 
-    @Id
     @ManyToOne
     @JoinColumn(name = "courseNumber", nullable = false)
     private Course course;
-
-    @Id
-    private String sectionNumber;
 
     @ManyToMany
     private Set<TeachingAssistant> teachingAssistants;

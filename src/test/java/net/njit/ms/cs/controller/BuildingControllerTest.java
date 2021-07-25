@@ -1,11 +1,8 @@
 package net.njit.ms.cs.controller;
 
-import net.njit.ms.cs.model.dto.BuildingDto;
-import net.njit.ms.cs.model.dto.StaffDto;
+import net.njit.ms.cs.model.dto.request.BuildingDto;
 import net.njit.ms.cs.model.entity.Building;
-import net.njit.ms.cs.model.entity.Staff;
 import net.njit.ms.cs.service.BuildingService;
-import net.njit.ms.cs.service.StaffService;
 import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

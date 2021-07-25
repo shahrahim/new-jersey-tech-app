@@ -1,6 +1,6 @@
 package net.njit.ms.cs.controller;
 
-import net.njit.ms.cs.model.dto.RoomDto;
+import net.njit.ms.cs.model.dto.request.RoomDto;
 import net.njit.ms.cs.model.entity.Building;
 import net.njit.ms.cs.model.entity.Room;
 import net.njit.ms.cs.service.RoomService;
