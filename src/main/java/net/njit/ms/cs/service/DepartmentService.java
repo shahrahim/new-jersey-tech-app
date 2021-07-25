@@ -73,8 +73,8 @@ public class DepartmentService {
     }
 
     public void deleteDepartment(String code) {
+        Department department = this.getDepartmentById(code);
         try {
-            Department department = this.getDepartmentById(code);
             handleDeleteFaculty(department);
             this.departmentRepository.delete(this.getDepartmentById(code));
         } catch (Exception e) {

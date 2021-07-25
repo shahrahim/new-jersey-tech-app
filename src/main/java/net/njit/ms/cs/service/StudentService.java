@@ -58,8 +58,9 @@ public class StudentService {
     }
 
     public void deleteStudent(String ssn) {
+        Student student = this.getStudentById(ssn);
         try {
-            this.studentRepository.delete(this.getStudentById(ssn));
+            this.studentRepository.delete(student);
         } catch (Exception e) {
             String message = String.format(
                     "Something went wrong deleting student with ssn: %s to backend", ssn);

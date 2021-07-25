@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -16,11 +17,11 @@ public class TeachingAssistant {
     private String ssn;
 
     @Id
-    private String studentSid;
+    private String sid;
 
     private Integer workHours;
 
-    @ManyToMany
-    private Set<Section> sections;
+    @ManyToMany(mappedBy = "teachingAssistants")
+    private Set<Section> sections = new HashSet<>();
 
 }
