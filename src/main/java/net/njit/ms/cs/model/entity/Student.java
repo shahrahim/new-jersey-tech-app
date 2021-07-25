@@ -1,5 +1,6 @@
 package net.njit.ms.cs.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.Cascade;
@@ -7,6 +8,7 @@ import org.hibernate.annotations.Cascade;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -15,12 +17,11 @@ import java.util.Set;
 public class Student {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer sid;
+    private String sid;
 
     @NotNull
+    @JsonManagedReference
     @ManyToOne
-    @Cascade(value={org.hibernate.annotations.CascadeType.ALL})
     @JoinColumn(name="departmentCode", nullable=false)
     private Department department;
 
@@ -37,7 +38,7 @@ public class Student {
     private String year;
 
     @ManyToMany
-    private Set<Section> sections;
+    private Set<Section> sections = new HashSet<>();
 
 
 

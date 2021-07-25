@@ -7,6 +7,6 @@ import lombok.Setter;
 @Setter
 public class SidDto {
 
-    private Integer sid;
+    private String sid;
 
 }

@@ -22,7 +22,8 @@ public class Department {
     @JoinColumn(name = "buildingNumber")
     private Building building;
 
-    @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "department", cascade = CascadeType.ALL)
+    @JsonBackReference
     private Set<Student> students = new HashSet<>();
 
     @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
