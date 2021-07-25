@@ -26,7 +26,8 @@ public class Department {
     @JsonBackReference
     private Set<Student> students = new HashSet<>();
 
-    @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "department", cascade = CascadeType.ALL)
+    @JsonBackReference
     private Set<Course> courses = new HashSet<>();
 
     @ManyToMany(mappedBy = "departments")
