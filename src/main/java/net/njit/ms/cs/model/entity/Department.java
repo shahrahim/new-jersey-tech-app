@@ -1,10 +1,12 @@
 package net.njit.ms.cs.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -21,13 +23,14 @@ public class Department {
     private Building building;
 
     @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Student> students;
+    private Set<Student> students = new HashSet<>();
 
     @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Course> courses;
+    private Set<Course> courses = new HashSet<>();
 
-    @ManyToMany
-    private Set<Faculty> faculties;
+    @ManyToMany(mappedBy = "departments")
+    @JsonBackReference
+    private Set<Faculty> faculties = new HashSet<>();
 
     private String chairSsn;
 

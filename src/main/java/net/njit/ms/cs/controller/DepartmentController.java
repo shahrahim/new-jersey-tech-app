@@ -1,11 +1,13 @@
 package net.njit.ms.cs.controller;
 
-import net.njit.ms.cs.model.dto.DepartmentDto;
+import net.njit.ms.cs.model.dto.request.DepartmentDto;
+import net.njit.ms.cs.model.dto.response.DepartmentResponse;
 import net.njit.ms.cs.model.entity.Department;
 import net.njit.ms.cs.service.DepartmentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -19,23 +21,30 @@ public class DepartmentController {
     }
 
     @GetMapping("/list")
-    public ResponseEntity<List<Department>> getAllDepartments() {
-        return ResponseEntity.ok().body(this.departmentService.getAllDepartments());
+    public ResponseEntity<List<DepartmentResponse>> getAllDepartments() {
+        List<Department> departments = this.departmentService.getAllDepartments();
+        List<DepartmentResponse> departmentResponses = new ArrayList<>();
+        departments.forEach(department -> {
+            departmentResponses.add(DepartmentService.getDepartmentResponse(department));
+        });
+        return ResponseEntity.ok().body(departmentResponses);
     }
 
     @GetMapping("/{code}")
-    public ResponseEntity<Department> getDepartmentById(@PathVariable String code) {
-        return ResponseEntity.ok().body(this.departmentService.getDepartmentById(code));
+    public ResponseEntity<DepartmentResponse> getDepartmentById(@PathVariable String code) {
+        return ResponseEntity.ok().body(DepartmentService.getDepartmentResponse(this.departmentService.getDepartmentById(code)));
     }
 
     @PostMapping
-    public ResponseEntity<Department> getCreatedDepartment(@RequestBody DepartmentDto departmentDto) {
-        return ResponseEntity.created(null).body(this.departmentService.getCreatedDepartment(departmentDto));
+    public ResponseEntity<DepartmentResponse> getCreatedDepartment(@RequestBody DepartmentDto departmentDto) {
+        return ResponseEntity.created(null).body(
+                DepartmentService.getDepartmentResponse(this.departmentService.getCreatedDepartment(departmentDto)));
     }
 
     @PutMapping("/{code}")
-    public ResponseEntity<Department> getUpdatedDepartment(@PathVariable String code, @RequestBody DepartmentDto departmentDto) {
-        return ResponseEntity.ok().body(this.departmentService.getUpdatedDepartment(code, departmentDto));
+    public ResponseEntity<DepartmentResponse> getUpdatedDepartment(@PathVariable String code, @RequestBody DepartmentDto departmentDto) {
+        return ResponseEntity.ok().body(DepartmentService.getDepartmentResponse(
+                this.departmentService.getUpdatedDepartment(code, departmentDto)));
     }
 
     @DeleteMapping("/{code}")

@@ -6,6 +6,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -18,11 +19,11 @@ public class Building {
 
     @JsonBackReference
     @OneToMany(mappedBy="building", cascade = CascadeType.ALL)
-    private Set<Department> departments;
+    private Set<Department> departments = new HashSet<>();
 
     @JsonBackReference
     @OneToMany(mappedBy="building", cascade = CascadeType.ALL)
-    private Set<Room> rooms;
+    private Set<Room> rooms = new HashSet<>();
 
     @NotNull
     private String name;

@@ -5,7 +5,7 @@ import net.njit.ms.cs.exception.BadRequestRequestException;
 import net.njit.ms.cs.exception.ResourceNotCreatedException;
 import net.njit.ms.cs.exception.ResourceNotDeletedException;
 import net.njit.ms.cs.exception.ResourceNotFoundException;
-import net.njit.ms.cs.model.dto.BuildingDto;
+import net.njit.ms.cs.model.dto.request.BuildingDto;
 import net.njit.ms.cs.model.entity.Building;
 import net.njit.ms.cs.repository.BuildingRepository;
 import org.springframework.stereotype.Service;

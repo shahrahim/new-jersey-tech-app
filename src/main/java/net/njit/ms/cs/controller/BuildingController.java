@@ -1,6 +1,6 @@
 package net.njit.ms.cs.controller;
 
-import net.njit.ms.cs.model.dto.BuildingDto;
+import net.njit.ms.cs.model.dto.request.BuildingDto;
 import net.njit.ms.cs.model.entity.Building;
 import net.njit.ms.cs.service.BuildingService;
 import org.springframework.http.ResponseEntity;

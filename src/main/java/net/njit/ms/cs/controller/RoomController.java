@@ -1,9 +1,7 @@
 package net.njit.ms.cs.controller;
 
-import net.njit.ms.cs.model.dto.RoomDto;
-import net.njit.ms.cs.model.dto.StaffDto;
+import net.njit.ms.cs.model.dto.request.RoomDto;
 import net.njit.ms.cs.model.entity.Room;
-import net.njit.ms.cs.model.entity.Staff;
 import net.njit.ms.cs.service.RoomService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

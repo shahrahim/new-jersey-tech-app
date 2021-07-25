@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -21,7 +22,7 @@ public class Room {
     private Building building;
 
     @ManyToMany
-    private Set<Section> sections;
+    private Set<Section> sections = new HashSet<>();
 
     private Integer capacity;
 

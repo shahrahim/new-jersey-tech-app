@@ -1,7 +1,8 @@
 package net.njit.ms.cs.controller;
 
 
-import net.njit.ms.cs.model.dto.DepartmentDto;
+import net.njit.ms.cs.model.dto.request.DepartmentDto;
+import net.njit.ms.cs.model.dto.response.DepartmentResponse;
 import net.njit.ms.cs.model.entity.Department;
 import net.njit.ms.cs.service.DepartmentService;
 import org.assertj.core.api.AutoCloseableSoftAssertions;
@@ -45,7 +46,7 @@ public class DepartmentControllerTest {
     public void testGetAllDepartments() {
         Mockito.when(this.departmentService.getAllDepartments()).thenReturn(new ArrayList<>());
 
-        ResponseEntity<List<Department>> foundDepartmentList = this.departmentController.getAllDepartments();
+        ResponseEntity<List<DepartmentResponse>> foundDepartmentList = this.departmentController.getAllDepartments();
         try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
             softly.assertThat(foundDepartmentList).isNotNull();
             softly.assertThat(foundDepartmentList.getBody()).isNotNull();
@@ -58,7 +59,7 @@ public class DepartmentControllerTest {
     public void testGetDepartmentById() {
         Mockito.when(this.departmentService.getDepartmentById(any())).thenReturn(department);
 
-        ResponseEntity<Department> foundDepartment = this.departmentController.getDepartmentById(code);
+        ResponseEntity<DepartmentResponse> foundDepartment = this.departmentController.getDepartmentById(code);
         try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
             softly.assertThat(foundDepartment).isNotNull();
             softly.assertThat(foundDepartment.getBody()).isNotNull();
@@ -75,7 +76,7 @@ public class DepartmentControllerTest {
 
         Mockito.when(this.departmentService.getCreatedDepartment(any(DepartmentDto.class))).thenReturn(department);
 
-        ResponseEntity<Department> foundDepartment = this.departmentController.getCreatedDepartment(departmentDto);
+        ResponseEntity<DepartmentResponse> foundDepartment = this.departmentController.getCreatedDepartment(departmentDto);
         try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
             softly.assertThat(foundDepartment).isNotNull();
             softly.assertThat(foundDepartment.getBody()).isNotNull();
@@ -96,7 +97,7 @@ public class DepartmentControllerTest {
 
         Mockito.when(this.departmentService.getUpdatedDepartment(any(String.class), any(DepartmentDto.class))).thenReturn(department);
 
-        ResponseEntity<Department> foundDepartment = this.departmentController.getUpdatedDepartment(code, departmentDto);
+        ResponseEntity<DepartmentResponse> foundDepartment = this.departmentController.getUpdatedDepartment(code, departmentDto);
         try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
             softly.assertThat(foundDepartment).isNotNull();
             softly.assertThat(foundDepartment.getBody()).isNotNull();

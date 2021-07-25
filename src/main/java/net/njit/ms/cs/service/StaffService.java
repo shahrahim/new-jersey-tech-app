@@ -5,7 +5,7 @@ import net.njit.ms.cs.exception.BadRequestRequestException;
 import net.njit.ms.cs.exception.ResourceNotCreatedException;
 import net.njit.ms.cs.exception.ResourceNotDeletedException;
 import net.njit.ms.cs.exception.ResourceNotFoundException;
-import net.njit.ms.cs.model.dto.StaffDto;
+import net.njit.ms.cs.model.dto.request.StaffDto;
 import net.njit.ms.cs.model.entity.Staff;
 import net.njit.ms.cs.repository.StaffRepository;
 import org.springframework.stereotype.Service;

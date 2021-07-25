@@ -5,7 +5,11 @@ import net.njit.ms.cs.exception.BadRequestRequestException;
 import net.njit.ms.cs.exception.ResourceNotCreatedException;
 import net.njit.ms.cs.exception.ResourceNotDeletedException;
 import net.njit.ms.cs.exception.ResourceNotFoundException;
-import net.njit.ms.cs.model.dto.DepartmentDto;
+import net.njit.ms.cs.model.dto.request.DepartmentDto;
+import net.njit.ms.cs.model.dto.response.DepartmentResponse;
+import net.njit.ms.cs.model.dto.response.NumberDto;
+import net.njit.ms.cs.model.dto.response.SidDto;
+import net.njit.ms.cs.model.dto.response.SsnDto;
 import net.njit.ms.cs.model.entity.Building;
 import net.njit.ms.cs.model.entity.Department;
 import net.njit.ms.cs.repository.BuildingRepository;
@@ -13,7 +17,10 @@ import net.njit.ms.cs.repository.DepartmentRepository;
 import net.njit.ms.cs.repository.FacultyRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 @Slf4j
@@ -22,13 +29,16 @@ public class DepartmentService {
     private final DepartmentRepository departmentRepository;
     private final FacultyRepository facultyRepository;
     private final BuildingRepository buildingRepository;
+    private final FacultyService facultyService;
 
     public DepartmentService(DepartmentRepository departmentRepository,
                              FacultyRepository facultyRepository,
-                             BuildingRepository buildingRepository) {
+                             BuildingRepository buildingRepository,
+                             FacultyService facultyService) {
         this.departmentRepository = departmentRepository;
         this.facultyRepository = facultyRepository;
         this.buildingRepository = buildingRepository;
+        this.facultyService = facultyService;
     }
 
     public List<Department> getAllDepartments() {
@@ -64,6 +74,8 @@ public class DepartmentService {
 
     public void deleteDepartment(String code) {
         try {
+            Department department = this.getDepartmentById(code);
+            handleDeleteFaculty(department);
             this.departmentRepository.delete(this.getDepartmentById(code));
         } catch (Exception e) {
             String message = String.format(
@@ -73,16 +85,69 @@ public class DepartmentService {
         }
     }
 
-    private Department getCreateOrReplacedDepartment(Department department) {
+    public static DepartmentResponse getDepartmentResponse(Department department) {
+        DepartmentResponse departmentResponse = new DepartmentResponse();
+        departmentResponse.setCode(department.getCode());
+        departmentResponse.setChairSsn(department.getChairSsn());
+        departmentResponse.setName(department.getName());
+
+        NumberDto building = new NumberDto();
+        building.setNumber(department.getBuilding().getNumber());
+        departmentResponse.setBuilding(building);
+
+        Set<SidDto> students = new HashSet<>();
+        department.getStudents().forEach(student -> {
+            SidDto sidDto = new SidDto();
+            sidDto.setSid(student.getSid());
+            students.add(sidDto);
+        });
+        departmentResponse.setStudents(students);
+
+        Set<NumberDto> courses = new HashSet<>();
+        department.getCourses().forEach(course -> {
+            NumberDto numberDto = new NumberDto();
+            numberDto.setNumber(course.getNumber());
+            courses.add(numberDto);
+        });
+        departmentResponse.setCourses(courses);
+
+        Set<SsnDto> faculties = new HashSet<>();
+        department.getFaculties().forEach(faculty -> {
+            SsnDto ssnDto = new SsnDto();
+            ssnDto.setSsn(faculty.getSsn());
+            faculties.add(ssnDto);
+        });
+        departmentResponse.setFaculties(faculties);
+
+        return departmentResponse;
+
+    }
+
+    public Department getCreateOrReplacedDepartment(Department department) {
         try {
             return this.departmentRepository.save(department);
         } catch (Exception e) {
+            log.error("{}",e);
             String message = String.format(
                     "Something went wrong creating or replacing department with code: %s to backend",
                     department.getCode());
             log.error("{} {}", message, e.getMessage());
             throw new ResourceNotCreatedException(message);
         }
+    }
+
+    private void handleDeleteFaculty(Department department) {
+        department.getFaculties().forEach(faculty -> {
+            Department departmentToRemove = null;
+            for(Department facultyDepartment: faculty.getDepartments()) {
+                if(facultyDepartment.getCode().equals(department.getCode())){
+                    departmentToRemove = department;
+                    break;
+                }
+            }
+            faculty.getDepartments().remove(departmentToRemove);
+            this.facultyService.getCreateOrReplacedFaculty(faculty);
+        });
     }
 
     private void validateDepartment(DepartmentDto departmentDto) {
@@ -132,5 +197,6 @@ public class DepartmentService {
         department.setName(departmentDto.getName());
         return department;
     }
+
 
 }

@@ -1,4 +1,4 @@
-package net.njit.ms.cs.model.dto;
+package net.njit.ms.cs.model.dto.request;
 
 import lombok.Getter;
 import lombok.Setter;
