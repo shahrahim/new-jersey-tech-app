@@ -51,8 +51,9 @@ public class BuildingService {
     }
 
     public void deleteBuilding(Integer number) {
+        Building building = this.getBuildingById(number);
         try {
-            this.buildingRepository.delete(this.getBuildingById(number));
+            this.buildingRepository.delete(building);
         } catch (Exception e) {
             String message = String.format(
                     "Something went wrong deleting building with number: %s to backend", number);

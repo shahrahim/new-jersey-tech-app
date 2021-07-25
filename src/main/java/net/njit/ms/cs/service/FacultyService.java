@@ -82,9 +82,8 @@ public class FacultyService {
     }
 
     public void deleteFaculty(String ssn) {
-
+        Faculty faculty = this.getFacultyById(ssn);
         try {
-            Faculty faculty = this.getFacultyById(ssn);
             handleDeleteDepartment(faculty);
             this.facultyRepository.delete(this.getFacultyById(ssn));
         } catch (Exception e) {

@@ -58,8 +58,9 @@ public class CourseService {
     }
 
     public void deleteCourse(Integer number) {
+        Course course = this.getCourseById(number);
         try {
-            this.courseRepository.delete(this.getCourseById(number));
+            this.courseRepository.delete(course);
         } catch (Exception e) {
             String message = String.format(
                     "Something went wrong deleting course with number: %s to backend", number);

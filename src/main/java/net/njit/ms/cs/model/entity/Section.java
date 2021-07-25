@@ -1,5 +1,6 @@
 package net.njit.ms.cs.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,6 +24,14 @@ public class Section {
     private Course course;
 
     @ManyToMany
+    @JoinTable(
+            name = "section_tas",
+            joinColumns = @JoinColumn(name = "number"),
+            inverseJoinColumns = {
+                    @JoinColumn(name = "ssn"),
+                    @JoinColumn(name = "studentId")
+            })
+    @JsonManagedReference
     private Set<TeachingAssistant> teachingAssistants;
 
     @ManyToMany

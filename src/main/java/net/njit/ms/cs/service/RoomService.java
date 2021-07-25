@@ -61,8 +61,9 @@ public class RoomService {
     }
 
     public void deleteRoom(Integer number) {
+        Room room = this.getRoomById(number);
         try {
-            this.roomRepository.delete(this.getRoomById(number));
+            this.roomRepository.delete(room);
         } catch (Exception e) {
             String message = String.format(
                     "Something went wrong deleting room with number: %s to backend", number);

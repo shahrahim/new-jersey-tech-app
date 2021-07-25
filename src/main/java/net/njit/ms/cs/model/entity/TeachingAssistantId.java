@@ -11,12 +11,13 @@ public class TeachingAssistantId implements Serializable {
 
     private String ssn;
 
-    private String studentSid;
+    private String sid;
 
-
-    public TeachingAssistantId(String ssn, String studentSid) {
+    public TeachingAssistantId(String ssn, String sid) {
         this.ssn = ssn;
-        this.studentSid = studentSid;
+        this.sid = sid;
     }
+
+    public TeachingAssistantId() {}
 
 }

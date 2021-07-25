@@ -51,8 +51,9 @@ public class StaffService {
     }
 
     public void deleteStaff(String ssn) {
+        Staff staff = this.getStaffById(ssn);
         try {
-            this.staffRepository.delete(this.getStaffById(ssn));
+            this.staffRepository.delete(staff);
         } catch (Exception e) {
             String message = String.format(
                     "Something went wrong deleting staff with ssn: %s to backend", ssn);
