@@ -6,13 +6,16 @@ import net.njit.ms.cs.exception.ResourceNotCreatedException;
 import net.njit.ms.cs.exception.ResourceNotDeletedException;
 import net.njit.ms.cs.exception.ResourceNotFoundException;
 import net.njit.ms.cs.model.dto.request.RoomDto;
-import net.njit.ms.cs.model.entity.Building;
-import net.njit.ms.cs.model.entity.Room;
+import net.njit.ms.cs.model.dto.response.RoomResponse;
+import net.njit.ms.cs.model.dto.response.SectionInfo;
+import net.njit.ms.cs.model.entity.*;
 import net.njit.ms.cs.repository.BuildingRepository;
 import net.njit.ms.cs.repository.RoomRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -32,15 +35,18 @@ public class RoomService {
         return this.roomRepository.findAll();
     }
 
-    public Room getRoomById(Integer number) {
-        return this.roomRepository.findById(number).orElseThrow(() ->
-                new ResourceNotFoundException(String.format("Room with number: %s not found", number)));
+    public Room getRoomById(RoomId roomId) {
+        return this.roomRepository.findById(roomId).orElseThrow(() ->
+                new ResourceNotFoundException(String.format("Room with number: %s not found", roomId.getRoomNumber())));
     }
 
     public Room getCreatedRoom(RoomDto roomDto) {
         Integer number = roomDto.getRoomNumber();
+        Integer buildingNumber = roomDto.getBuildingNumber();
 
-        if (this.roomRepository.existsById(number)) {
+        RoomId roomId = new RoomId(number, buildingNumber);
+
+        if (this.roomRepository.existsById(roomId)) {
             String message = String.format("Room with number: %s already exists.", number);
             log.error(message);
             throw new BadRequestRequestException(message);
@@ -48,28 +54,48 @@ public class RoomService {
         return this.getCreateOrReplacedRoom(this.getNewRoom(roomDto));
     }
 //
-    public Room getUpdatedRoom(Integer number, RoomDto roomDto) {
-        Room room = this.getRoomById(number);
-        Integer buildingNumber = room.getBuilding().getNumber();
-        if (!number.equals(roomDto.getRoomNumber()) || !buildingNumber.equals(roomDto.getBuildingNumber())) {
-            String message = String.format(
-                    "Room number: %s or Building number %s cannot be changed in update", number, buildingNumber);
-            log.error(message);
-            throw new BadRequestRequestException(message);
-        }
-        return this.getCreateOrReplacedRoom(this.getNewRoom(roomDto));
+    public Room getUpdatedRoom(RoomDto roomDto) {
+        RoomId roomId = new RoomId();
+        roomId.setRoomNumber(roomDto.getRoomNumber());
+        roomId.setBuildingNumber(roomDto.getBuildingNumber());
+        Room room = this.getRoomById(roomId);
+        room.setCapacity(roomDto.getCapacity());
+        room.setAudioVisual(roomDto.getAudioVisual());
+        return this.getCreateOrReplacedRoom(room);
     }
 
-    public void deleteRoom(Integer number) {
-        Room room = this.getRoomById(number);
+    public void deleteRoom(RoomId roomId) {
+        Room room = this.getRoomById(roomId);
         try {
             this.roomRepository.delete(room);
         } catch (Exception e) {
             String message = String.format(
-                    "Something went wrong deleting room with number: %s to backend", number);
+                    "Something went wrong deleting room with number: %s to backend", room.getRoomNumber());
             log.error("{} {}", message, e.getMessage());
             throw new ResourceNotDeletedException(message);
         }
+    }
+
+    public static RoomResponse getRoomResponse(Room room) {
+        RoomResponse roomResponse = new RoomResponse();
+        roomResponse.setRoomNumber(room.getRoomNumber());
+        roomResponse.setCapacity(room.getCapacity());
+        roomResponse.setBuildingNumber(room.getBuildingNumber());
+        roomResponse.setAudioVisual(room.getAudioVisual());
+
+        Set<SectionInfo> sections = new HashSet<>();
+        room.getSections().forEach(section -> {
+            SectionInfo sectionInfo = new SectionInfo();
+            sectionInfo.setNumber(section.getNumber());
+            sectionInfo.setFacultySsn(section.getFacultySsn());
+            sectionInfo.setCourseNumber(section.getCourseNumber());
+            sectionInfo.setYear(section.getYear());
+            sectionInfo.setSemester(section.getSemester());
+            sections.add(sectionInfo);
+        });
+        roomResponse.setSections(sections);
+
+        return roomResponse;
     }
 
     private Room getCreateOrReplacedRoom(Room room) {
@@ -86,7 +112,7 @@ public class RoomService {
     private Room getNewRoom(RoomDto roomDto) {
         Room room = new Room();
         room.setRoomNumber(roomDto.getRoomNumber());
-        room.setBuilding(getValidatedBuilding(roomDto));
+        room.setBuildingNumber(getValidatedBuilding(roomDto).getNumber());
         room.setCapacity(roomDto.getCapacity());
         room.setAudioVisual(roomDto.getAudioVisual());
         return room;

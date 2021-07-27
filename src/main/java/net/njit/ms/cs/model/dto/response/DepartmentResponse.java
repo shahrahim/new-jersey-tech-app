@@ -15,7 +15,7 @@ public class DepartmentResponse {
 
     private String chairSsn;
 
-    private NumberDto building;
+    private Integer buildingNumber;
 
     private Set<SidDto> students;
 

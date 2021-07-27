@@ -12,37 +12,46 @@ import net.njit.ms.cs.model.dto.response.SidDto;
 import net.njit.ms.cs.model.dto.response.SsnDto;
 import net.njit.ms.cs.model.entity.Building;
 import net.njit.ms.cs.model.entity.Department;
+import net.njit.ms.cs.model.entity.Staff;
 import net.njit.ms.cs.repository.BuildingRepository;
 import net.njit.ms.cs.repository.DepartmentRepository;
-import net.njit.ms.cs.repository.FacultyRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 @Slf4j
 public class DepartmentService {
 
     private final DepartmentRepository departmentRepository;
-    private final FacultyRepository facultyRepository;
     private final BuildingRepository buildingRepository;
-    private final FacultyService facultyService;
+    private final StaffService staffService;
+    private final StudentService studentService;
+
+    private static final String FACULTY = "Faculty";
 
     public DepartmentService(DepartmentRepository departmentRepository,
-                             FacultyRepository facultyRepository,
                              BuildingRepository buildingRepository,
-                             FacultyService facultyService) {
+                             StaffService staffService,
+                             StudentService studentService) {
         this.departmentRepository = departmentRepository;
-        this.facultyRepository = facultyRepository;
         this.buildingRepository = buildingRepository;
-        this.facultyService = facultyService;
+        this.staffService = staffService;
+        this.studentService = studentService;
     }
 
     public List<Department> getAllDepartments() {
-        return this.departmentRepository.findAll();
+        List<Department> departments = this.departmentRepository.findAll();
+        departments.forEach(department -> {
+            department.getFaculties().forEach(faculty -> {
+                if(!faculty.getType().equals(FACULTY)) {
+                    department.getFaculties().remove(faculty);
+                }
+            });
+        });
+        return departments;
     }
 
     public Department getDepartmentById(String code) {
@@ -57,7 +66,7 @@ public class DepartmentService {
             throw new BadRequestRequestException(message);
         }
         validateDepartment(departmentDto);
-        return this.getCreateOrReplacedDepartment(this.getNewDepartmentForCreateRequest(departmentDto));
+        return this.getCreatedOrReplacedDepartment(this.getNewDepartmentForCreateRequest(departmentDto));
     }
 
     public Department getUpdatedDepartment(String code, DepartmentDto departmentDto) {
@@ -69,13 +78,14 @@ public class DepartmentService {
             throw new BadRequestRequestException(message);
         }
         validateDepartment(departmentDto);
-        return this.getCreateOrReplacedDepartment(this.getDepartmentForRequest(department, departmentDto));
+        return this.getCreatedOrReplacedDepartment(this.getDepartmentForRequest(department, departmentDto));
     }
 
     public void deleteDepartment(String code) {
         Department department = this.getDepartmentById(code);
+        handleFacultyForDepartmentDeletion(department);
+        handleStudentsForDepartmentDeletion(department);
         try {
-            handleDeleteFaculty(department);
             this.departmentRepository.delete(this.getDepartmentById(code));
         } catch (Exception e) {
             String message = String.format(
@@ -90,10 +100,8 @@ public class DepartmentService {
         departmentResponse.setCode(department.getCode());
         departmentResponse.setChairSsn(department.getChairSsn());
         departmentResponse.setName(department.getName());
+        departmentResponse.setBuildingNumber(department.getBuildingNumber());
 
-        NumberDto building = new NumberDto();
-        building.setNumber(department.getBuilding().getNumber());
-        departmentResponse.setBuilding(building);
 
         Set<SidDto> students = new HashSet<>();
         department.getStudents().forEach(student -> {
@@ -123,11 +131,11 @@ public class DepartmentService {
 
     }
 
-    public Department getCreateOrReplacedDepartment(Department department) {
+    public Department getCreatedOrReplacedDepartment(Department department) {
         try {
             return this.departmentRepository.save(department);
         } catch (Exception e) {
-            log.error("{}",e);
+            log.error("{}", e);
             String message = String.format(
                     "Something went wrong creating or replacing department with code: %s to backend",
                     department.getCode());
@@ -136,17 +144,20 @@ public class DepartmentService {
         }
     }
 
-    private void handleDeleteFaculty(Department department) {
+    private void handleFacultyForDepartmentDeletion(Department department) {
         department.getFaculties().forEach(faculty -> {
-            Department departmentToRemove = null;
-            for(Department facultyDepartment: faculty.getDepartments()) {
-                if(facultyDepartment.getCode().equals(department.getCode())){
-                    departmentToRemove = department;
-                    break;
-                }
-            }
-            faculty.getDepartments().remove(departmentToRemove);
-            this.facultyService.getCreateOrReplacedFaculty(faculty);
+            faculty.getDepartments().forEach(departmentToRemove -> {
+                faculty.getDepartments().remove(departmentToRemove);
+                this.staffService.getCreateOrReplacedStaff(faculty);
+            });
+
+        });
+    }
+
+    private void handleStudentsForDepartmentDeletion(Department department) {
+        department.getStudents().forEach(student -> {
+            student.setDepartmentCode(null);
+            this.studentService.getCreateOrReplacedStudent(student);
         });
     }
 
@@ -156,18 +167,6 @@ public class DepartmentService {
             String message = String.format("Department code: %s is invalid", departmentCode);
             log.error(message);
             throw new BadRequestRequestException(message);
-        }
-        validateDepartmentChair(departmentDto.getChairSsn());
-    }
-
-    private void validateDepartmentChair(String chairSsn) {
-        System.out.println("Chair" + chairSsn);
-        if (chairSsn != null && !chairSsn.equals("")) {
-            if (!this.facultyRepository.existsById(chairSsn)) {
-                String message = String.format("Chair Ssn: %s does not exist", chairSsn);
-                log.error(message);
-                throw new BadRequestRequestException(message);
-            }
         }
     }
 
@@ -184,18 +183,27 @@ public class DepartmentService {
     private Department getDepartmentForRequest(Department department, DepartmentDto departmentDto) {
         Integer buildingNumber = departmentDto.getBuildingNumber();
 
-        if(!isBuildingNumberDefined(buildingNumber)) {
-            String message = String.format("Building Must be defined: %s does not exist", buildingNumber);
-            log.error(message);
-            throw new BadRequestRequestException(message);
-        } else {
+        if(isBuildingNumberDefined(buildingNumber)) {
             Building building = this.buildingRepository.findById(buildingNumber).orElseThrow(()  ->
                     new ResourceNotFoundException(String.format("Building number %s does not exist", buildingNumber)));
-            department.setBuilding(building);
+            department.setBuildingNumber(building.getNumber());
         }
-        department.setChairSsn(departmentDto.getChairSsn());
+        department.setChairSsn(this.getChairPersonForRequest(departmentDto.getChairSsn()));
         department.setName(departmentDto.getName());
         return department;
+    }
+
+    private String getChairPersonForRequest(String chairSsn) {
+        if (chairSsn != null && !chairSsn.equals("")) {
+            Staff staff = this.staffService.getStaffById(chairSsn);
+            if (staff.getType() != FACULTY) {
+                String message = String.format("Chair Ssn: %s id not of type %s", chairSsn, FACULTY);
+                log.error(message);
+                throw new BadRequestRequestException(message);
+            }
+            return staff.getSsn();
+        }
+        return null;
     }
 
 

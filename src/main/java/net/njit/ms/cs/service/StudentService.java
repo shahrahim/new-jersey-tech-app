@@ -6,13 +6,17 @@ import net.njit.ms.cs.exception.ResourceNotCreatedException;
 import net.njit.ms.cs.exception.ResourceNotDeletedException;
 import net.njit.ms.cs.exception.ResourceNotFoundException;
 import net.njit.ms.cs.model.dto.request.StudentDto;
+import net.njit.ms.cs.model.dto.response.SectionInfo;
+import net.njit.ms.cs.model.dto.response.StudentResponse;
 import net.njit.ms.cs.model.entity.Department;
 import net.njit.ms.cs.model.entity.Student;
 import net.njit.ms.cs.repository.DepartmentRepository;
 import net.njit.ms.cs.repository.StudentRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -38,7 +42,11 @@ public class StudentService {
 
     public Student getCreatedStudent(StudentDto studentDto) {
         if (this.studentRepository.existsById(studentDto.getSid())) {
-            String message = String.format("Student with sid: %s already exists.", studentDto.getSsn());
+            String message = String.format("Student with sid: %s already exists.", studentDto.getSid());
+            log.error(message);
+            throw new BadRequestRequestException(message);
+        } else if (!this.studentRepository.findAllBySsn(studentDto.getSsn()).isEmpty()) {
+            String message = String.format("Student with ssn: %s already exists.", studentDto.getSsn());
             log.error(message);
             throw new BadRequestRequestException(message);
         }
@@ -47,7 +55,6 @@ public class StudentService {
 
     public Student getUpdatedStudent(String sid, StudentDto studentDto) {
         Student student = this.getStudentById(sid);
-        System.out.println();
         if (!sid.equals(studentDto.getSid()) || !student.getSsn().equals(studentDto.getSsn())) {
             String message = String.format(
                     "Student sid: %s or ssn: %s cannot be changed in update", sid, student.getSsn());
@@ -69,7 +76,33 @@ public class StudentService {
         }
     }
 
-    private Student getCreateOrReplacedStudent(Student student) {
+    public static StudentResponse getStudentResponse(Student student) {
+        StudentResponse studentResponse = new StudentResponse();
+        studentResponse.setSid(student.getSid());
+        studentResponse.setSsn(student.getSsn());
+
+        studentResponse.setDepartmentCode(student.getDepartmentCode());
+        studentResponse.setName(student.getName());
+        studentResponse.setAddress(student.getAddress());
+        studentResponse.setYear(student.getYear());
+        studentResponse.setHighSchool(student.getHighSchool());
+
+        Set<SectionInfo> sections = new HashSet<>();
+        student.getSections().forEach(section -> {
+            SectionInfo sectionInfo = new SectionInfo();
+            sectionInfo.setNumber(section.getNumber());
+            sectionInfo.setFacultySsn(section.getFacultySsn());
+            sectionInfo.setCourseNumber(section.getCourseNumber());
+            sectionInfo.setYear(section.getYear());
+            sectionInfo.setSemester(section.getSemester());
+            sections.add(sectionInfo);
+        });
+        studentResponse.setSections(sections);
+
+        return studentResponse;
+    }
+
+    public Student getCreateOrReplacedStudent(Student student) {
         try {
             return this.studentRepository.save(student);
         } catch (Exception e) {
@@ -83,7 +116,7 @@ public class StudentService {
     private Student getNewStudent(StudentDto studentDto) {
         Student student = new Student();
         student.setSid(studentDto.getSid());
-        student.setDepartment(this.getDepartmentForCreateRequest(studentDto.getDepartmentCode()));
+        student.setDepartmentCode(this.getDepartmentForCreateRequest(studentDto.getDepartmentCode()).getCode());
         student.setSsn(studentDto.getSsn());
         student.setName(studentDto.getName());
         student.setAddress(studentDto.getAddress());

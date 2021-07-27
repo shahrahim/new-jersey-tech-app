@@ -17,9 +17,15 @@ import java.util.List;
 public class BuildingService {
 
     private final BuildingRepository buildingRepository;
+    private final StaffService staffService;
+    private final StudentService studentService;
 
-    public BuildingService(BuildingRepository buildingRepository) {
+    public BuildingService(BuildingRepository buildingRepository,
+                           StaffService staffService,
+                           StudentService studentService) {
         this.buildingRepository = buildingRepository;
+        this.staffService = staffService;
+        this.studentService = studentService;
     }
 
     public List<Building> getAllBuildings() {
@@ -41,17 +47,21 @@ public class BuildingService {
     }
 
     public Building getUpdatedBuilding(Integer number, BuildingDto buildingDto) {
-        this.getBuildingById(number);
+        Building building = this.getBuildingById(number);
         if (!number.equals(buildingDto.getNumber())) {
             String message = String.format("Building number: %s cannot be changed in update", number);
             log.error(message);
             throw new BadRequestRequestException(message);
         }
-        return this.getCreateOrReplacedBuilding(this.getNewBuilding(buildingDto));
+        building.setName(buildingDto.getName());
+        building.setLocation(buildingDto.getLocation());
+        return this.getCreateOrReplacedBuilding(building);
     }
 
     public void deleteBuilding(Integer number) {
         Building building = this.getBuildingById(number);
+        handleFacultyForDepartmentDeletion(building);
+        handleStudentsForDepartmentDeletion(building);
         try {
             this.buildingRepository.delete(building);
         } catch (Exception e) {
@@ -73,6 +83,27 @@ public class BuildingService {
             throw new ResourceNotCreatedException(message);
         }
     }
+
+    private void handleFacultyForDepartmentDeletion(Building building) {
+        building.getDepartments().forEach(department -> {
+            department.getFaculties().forEach(faculty -> {
+                faculty.getDepartments().remove(department);
+                this.staffService.getCreateOrReplacedStaff(faculty);
+            });
+
+        });
+    }
+
+    private void handleStudentsForDepartmentDeletion(Building building) {
+        building.getDepartments().forEach(department -> {
+            department.getStudents().forEach(student -> {
+                student.setDepartmentCode(null);
+                this.studentService.getCreateOrReplacedStudent(student);
+            });
+
+        });
+    }
+
 
     private Building getNewBuilding(BuildingDto buildingDto) {
         Building building = new Building();

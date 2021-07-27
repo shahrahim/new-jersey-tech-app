@@ -9,17 +9,16 @@ import java.io.Serializable;
 @Setter
 public class SectionId implements Serializable {
 
-    private Faculty faculty;
+    private Integer number;
 
-    private Course course;
+    private Integer courseNumber;
 
-    private String sectionNumber;
 
-    public SectionId(Faculty faculty, Course course, String sectionNumber) {
-        this.faculty = faculty;
-        this.course = course;
-        this.sectionNumber = sectionNumber;
+    public SectionId(Integer number, Integer courseNumber) {
+        this.number = number;
+        this.courseNumber = courseNumber;
     }
 
+    public SectionId() {}
 
 }

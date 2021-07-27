@@ -1,5 +1,6 @@
 package net.njit.ms.cs.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.Setter;
@@ -8,6 +9,7 @@ import javax.persistence.*;
 import java.util.Set;
 
 @Entity
+@IdClass(SectionId.class)
 @Getter
 @Setter
 public class Section {
@@ -15,31 +17,24 @@ public class Section {
     @Id
     private Integer number;
 
-    @ManyToOne
-    @JoinColumn(name = "facultySsn", nullable = false)
-    private Faculty faculty;
+    @Id
+    private Integer courseNumber;
 
-    @ManyToOne
-    @JoinColumn(name = "courseNumber", nullable = false)
-    private Course course;
+    private String facultySsn;
+
+    private String year;
+
+    private String semester;
 
     @ManyToMany
-    @JoinTable(
-            name = "section_tas",
-            joinColumns = @JoinColumn(name = "number"),
-            inverseJoinColumns = {
-                    @JoinColumn(name = "ssn"),
-                    @JoinColumn(name = "studentId")
-            })
-    @JsonManagedReference
-    private Set<TeachingAssistant> teachingAssistants;
+    @JsonBackReference
+    private Set<Staff> teachingAssistants;
 
     @ManyToMany
     private Set<Student> students;
 
     @ManyToMany
     private Set<Room> rooms;
-
 
     private Integer maxEnroll;
 

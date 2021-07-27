@@ -17,25 +17,24 @@ public class Department {
     @Id
     private String code;
 
-    @ManyToOne
-    @JsonManagedReference
-    @JoinColumn(name = "buildingNumber")
-    private Building building;
+    private Integer buildingNumber;
 
-    @OneToMany(mappedBy = "department", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "departmentCode")
     @JsonBackReference
     private Set<Student> students = new HashSet<>();
 
-    @OneToMany(mappedBy = "department", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "departmentCode", cascade = CascadeType.ALL)
     @JsonBackReference
     private Set<Course> courses = new HashSet<>();
 
     @ManyToMany(mappedBy = "departments")
     @JsonBackReference
-    private Set<Faculty> faculties = new HashSet<>();
+    private Set<Staff> faculties = new HashSet<>();
 
     private String chairSsn;
 
     private String name;
+
+    private Integer budget;
 
 }

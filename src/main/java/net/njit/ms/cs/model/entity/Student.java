@@ -19,14 +19,11 @@ public class Student {
     @Id
     private String sid;
 
-    @NotNull
-    @JsonManagedReference
-    @ManyToOne
-    @JoinColumn(name="departmentCode", nullable=false)
-    private Department department;
-
+    @Column(unique = true)
     @Pattern(regexp="/^\\d{3}-?\\d{2}-?\\d{4}$/",message="must be a ssn")
     private String ssn;
+
+    private String departmentCode;
 
     private String name;
 
@@ -37,9 +34,7 @@ public class Student {
     @Pattern(regexp="^\\d{4}$",message="must be a year")
     private String year;
 
-    @ManyToMany
+    @ManyToMany(mappedBy = "students")
     private Set<Section> sections = new HashSet<>();
-
-
 
 }
