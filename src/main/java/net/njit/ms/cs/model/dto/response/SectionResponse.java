@@ -24,7 +24,7 @@ public class SectionResponse {
 
     private Set<SidDto> students;
 
-    private Set<RoomId> rooms;
+    private Set<SectionRoomInfo> rooms;
 
     private Integer maxEnroll;
 

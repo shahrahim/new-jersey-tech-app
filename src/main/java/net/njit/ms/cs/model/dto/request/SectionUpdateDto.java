@@ -2,7 +2,6 @@ package net.njit.ms.cs.model.dto.request;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.njit.ms.cs.model.entity.RoomId;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -24,10 +23,6 @@ public class SectionUpdateDto {
     private Set<String> studentsToAdd = new HashSet<>();
 
     private Set<String> studentsToRemove = new HashSet<>();
-
-    private Set<RoomId> roomsToAdd = new HashSet<>();
-
-    private Set<RoomId> roomsToRemove = new HashSet<>();
 
     private Integer maxEnroll;
 

@@ -91,10 +91,7 @@ public class StudentService {
         student.getSections().forEach(section -> {
             SectionInfo sectionInfo = new SectionInfo();
             sectionInfo.setNumber(section.getNumber());
-            sectionInfo.setFacultySsn(section.getFacultySsn());
             sectionInfo.setCourseNumber(section.getCourseNumber());
-            sectionInfo.setYear(section.getYear());
-            sectionInfo.setSemester(section.getSemester());
             sections.add(sectionInfo);
         });
         studentResponse.setSections(sections);

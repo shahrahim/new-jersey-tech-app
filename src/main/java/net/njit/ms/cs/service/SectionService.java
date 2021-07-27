@@ -6,15 +6,11 @@ import net.njit.ms.cs.exception.ResourceNotCreatedException;
 import net.njit.ms.cs.exception.ResourceNotDeletedException;
 import net.njit.ms.cs.exception.ResourceNotFoundException;
 import net.njit.ms.cs.model.dto.request.SectionDto;
+import net.njit.ms.cs.model.dto.request.SectionRoomDto;
 import net.njit.ms.cs.model.dto.request.SectionUpdateDto;
-import net.njit.ms.cs.model.dto.response.SectionResponse;
-import net.njit.ms.cs.model.dto.response.SidDto;
-import net.njit.ms.cs.model.dto.response.SsnDto;
+import net.njit.ms.cs.model.dto.response.*;
 import net.njit.ms.cs.model.entity.*;
-import net.njit.ms.cs.repository.CourseRepository;
-import net.njit.ms.cs.repository.RoomRepository;
-import net.njit.ms.cs.repository.SectionRepository;
-import net.njit.ms.cs.repository.StudentRepository;
+import net.njit.ms.cs.repository.*;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -32,6 +28,7 @@ public class SectionService {
     private final RoomService roomService;
     private final StudentService studentService;
     private final StaffService staffService;
+    private final SectionRoomRepository sectionRoomRepository;
 
     private static final String TA = "TA";
     private static final String FACULTY = "Faculty";
@@ -42,7 +39,8 @@ public class SectionService {
                           StudentRepository studentRepository,
                           RoomService roomService,
                           StudentService studentService,
-                          StaffService staffService) {
+                          StaffService staffService,
+                          SectionRoomRepository sectionRoomRepository) {
         this.sectionRepository = sectionRepository;
         this.courseRepository = courseRepository;
         this.roomRepository = roomRepository;
@@ -50,6 +48,7 @@ public class SectionService {
         this.roomService = roomService;
         this.studentService = studentService;
         this.staffService = staffService;
+        this.sectionRoomRepository = sectionRoomRepository;
     }
 
     public List<Section> getAllSections() {
@@ -93,6 +92,32 @@ public class SectionService {
         return this.getCreateOrReplacedSection(this.getNewSection(sectionDto));
     }
 
+    public SectionRoom getCreatedSectionRoom(SectionRoomDto sectionRoomDto) {
+        Section section = this.getSectionById(sectionRoomDto.getSection());
+        Room room = this.roomService.getRoomById(sectionRoomDto.getRoom());
+
+        SectionRoomId sectionRoomId = new SectionRoomId();
+        sectionRoomId.setSection(sectionRoomDto.getSection());
+        sectionRoomId.setRoom(sectionRoomDto.getRoom());
+        sectionRoomId.setWeekday(sectionRoomDto.getWeekday());
+        sectionRoomId.setTime(sectionRoomDto.getTime());
+
+        if(this.sectionRoomRepository.existsById(sectionRoomId)) {
+            String message = String.format("SectionRoom with weekday and time already exists");
+            log.error(message);
+            throw new BadRequestRequestException(message);
+        }
+        SectionRoom sectionRoom = new SectionRoom();
+        sectionRoom.setSection(section);
+        sectionRoom.setRoom(room);
+        System.out.println(sectionRoomDto.getTime());
+        System.out.println(sectionRoomDto.getWeekday());
+        sectionRoom.setWeekday(sectionRoomDto.getWeekday());
+        sectionRoom.setTime(sectionRoomDto.getTime());
+
+        return this.getCreatedOrReplacedSectionRoom(sectionRoom);
+    }
+
     public Section getUpdatedSection(SectionUpdateDto sectionDto) {
         SectionId sectionId = new SectionId(sectionDto.getNumber(), sectionDto.getCourseNumber());
         Section section = this.getSectionById(sectionId);
@@ -122,12 +147,14 @@ public class SectionService {
         sectionResponse.setSemester(section.getSemester());
         sectionResponse.setYear(section.getYear());
 
-        Set<RoomId> rooms = new HashSet<>();
-        section.getRooms().forEach(room -> {
-            RoomId roomId = new RoomId();
-            roomId.setRoomNumber(room.getRoomNumber());
-            roomId.setBuildingNumber(room.getBuildingNumber());
-            rooms.add(roomId);
+        Set<SectionRoomInfo> rooms = new HashSet<>();
+        section.getSectionRooms().forEach(room -> {
+            SectionRoomInfo sectionRoomInfo = new SectionRoomInfo();
+            sectionRoomInfo.setRoomNumber(room.getRoom().getRoomNumber());
+            sectionRoomInfo.setBuildingNumber(room.getRoom().getBuildingNumber());
+            sectionRoomInfo.setWeekday(room.getWeekday());
+            sectionRoomInfo.setTime(room.getTime());
+            rooms.add(sectionRoomInfo);
         });
         sectionResponse.setRooms(rooms);
 
@@ -150,6 +177,21 @@ public class SectionService {
         return sectionResponse;
     }
 
+    public static SectionRoomResponse getSectionRoomResponse(SectionRoom sectionRoom) {
+        SectionRoomResponse sectionRoomResponse = new SectionRoomResponse();
+
+        sectionRoomResponse.setSection(new SectionId(sectionRoom.getSection().getNumber(),
+                sectionRoom.getSection().getCourseNumber()));
+
+        sectionRoomResponse.setRoom(new RoomId(sectionRoom.getRoom().getRoomNumber(),
+                sectionRoom.getRoom().getBuildingNumber()));
+
+        sectionRoomResponse.setTime(sectionRoom.getTime());
+        sectionRoomResponse.setWeekday(sectionRoom.getWeekday());
+        return sectionRoomResponse;
+
+    }
+
     public Section getCreateOrReplacedSection(Section section) {
         try {
             return this.sectionRepository.save(section);
@@ -161,22 +203,17 @@ public class SectionService {
         }
     }
 
+    public SectionRoom getCreatedOrReplacedSectionRoom(SectionRoom sectionRoom) {
+        try {
+            return this.sectionRoomRepository.save(sectionRoom);
+        } catch (Exception e) {
+            String message = "Something went wrong creating or replacing sectionRoom to backend";
+            log.error("{} {}", message, e.getMessage());
+            throw new ResourceNotCreatedException(message);
+        }
+    }
+
     private void handleSectionUpdate(Section section, SectionUpdateDto sectionUpdateDto) {
-        sectionUpdateDto.getRoomsToRemove().forEach(roomNumberToRemove -> {
-            Room room = this.roomService.getRoomById(roomNumberToRemove);
-            section.getRooms().remove(room);
-        });
-
-        Set<RoomId> currentRoomNumbers = new HashSet<>();
-        section.getRooms().forEach(room -> currentRoomNumbers.add(
-                new RoomId(room.getRoomNumber(), room.getBuildingNumber())));
-        sectionUpdateDto.getRoomsToAdd().forEach(roomNumberToAdd -> {
-            if (!currentRoomNumbers.contains(roomNumberToAdd)) {
-                Room room = this.roomService.getRoomById(roomNumberToAdd);
-                section.getRooms().add(room);
-            }
-        });
-
         sectionUpdateDto.getTeachingAssistantsToRemove().forEach(teachingAssistantSsn -> {
             Staff teachingAssistant = this.staffService
                     .getStaffById(teachingAssistantSsn);
@@ -213,7 +250,6 @@ public class SectionService {
         section.setNumber(sectionDto.getNumber());
         section.setFacultySsn(this.getStaffForRequest(sectionDto.getFacultySsn(), FACULTY).getSsn());
         section.setCourseNumber(this.getCourseForRequest(sectionDto.getCourseNumber()).getNumber());
-        section.setRooms(this.getRoomsForRequest(sectionDto.getRooms()));
         section.setTeachingAssistants(this.getTeachingAssistantsForRequest(sectionDto.getTeachingAssistantSsns()));
         section.setStudents(this.getStudentsForRequest(sectionDto.getStudents()));
         section.setMaxEnroll(sectionDto.getMaxEnroll());
@@ -231,7 +267,6 @@ public class SectionService {
     private Staff getStaffForRequest(String ssn, String type) {
         Staff faculty = this.staffService.getStaffById(ssn);
         String facultyType = faculty.getType();
-        System.out.println(String.format("%s %s", ssn, type));
         if (!facultyType.equals(type)) {
             String message = String.format("Staff %s is of type %s and should be of type %s", ssn, facultyType, type);
             log.error(message);
@@ -244,16 +279,6 @@ public class SectionService {
         return this.courseRepository.findById(courseNumber).orElseThrow(
                 () -> new ResourceNotFoundException(String.format(
                         "Course with number: %s does not exist", courseNumber)));
-    }
-
-    private Set<Room> getRoomsForRequest(Set<RoomId> roomNumbers) {
-        Set<Room> rooms = new HashSet<>();
-        roomNumbers.forEach(roomNumber -> {
-            rooms.add(this.roomRepository.findById(roomNumber).orElseThrow(
-                    () -> new ResourceNotFoundException(String.format(
-                            "Room with number: %s does not exist", roomNumber))));
-        });
-        return rooms;
     }
 
     private Set<Student> getStudentsForRequest(Set<String> sids) {

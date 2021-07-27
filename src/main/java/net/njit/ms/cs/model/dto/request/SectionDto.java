@@ -25,8 +25,6 @@ public class SectionDto {
 
     private Set<String> students = new HashSet<>();
 
-    private Set<RoomId> rooms = new HashSet<>();
-
     private Integer maxEnroll;
 
 }

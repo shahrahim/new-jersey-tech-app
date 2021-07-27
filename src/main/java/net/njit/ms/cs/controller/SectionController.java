@@ -1,10 +1,13 @@
 package net.njit.ms.cs.controller;
 
 import net.njit.ms.cs.model.dto.request.SectionDto;
+import net.njit.ms.cs.model.dto.request.SectionRoomDto;
 import net.njit.ms.cs.model.dto.request.SectionUpdateDto;
 import net.njit.ms.cs.model.dto.response.SectionResponse;
+import net.njit.ms.cs.model.dto.response.SectionRoomResponse;
 import net.njit.ms.cs.model.entity.Section;
 import net.njit.ms.cs.model.entity.SectionId;
+import net.njit.ms.cs.model.entity.SectionRoom;
 import net.njit.ms.cs.service.SectionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -46,18 +49,25 @@ public class SectionController {
         return ResponseEntity.created(null).body(SectionService.getSectionResponse(section));
     }
 
+    @PostMapping("/room")
+    public ResponseEntity<SectionRoomResponse> getCreatedSectionRoom(@RequestBody SectionRoomDto sectionRoomDto) {
+        SectionRoom sectionRoom = this.sectionService.getCreatedSectionRoom(sectionRoomDto);
+        return ResponseEntity.created(null).body(SectionService.getSectionRoomResponse(sectionRoom));
+    }
+
+
     @PutMapping
     public ResponseEntity<SectionResponse> getUpdatedSection(@RequestBody SectionUpdateDto sectionDto) {
         Section section = this.sectionService.getUpdatedSection(sectionDto);
         return ResponseEntity.ok().body(SectionService.getSectionResponse(section));
     }
-//
-//    @DeleteMapping("/{sid}")
-//    public ResponseEntity<String> deleteSection(@PathVariable String sid) {
-//        this.sectionService.deleteSection(sid);
-//        String message = String.format("Section with sid %s has been deleted.", sid);
-//        return ResponseEntity.ok().body(message);
-//    }
+
+    @DeleteMapping
+    public ResponseEntity<String> deleteSection(@RequestBody SectionId sectionId) {
+        this.sectionService.deleteSection(sectionId);
+        String message = String.format("Section with sid %s has been deleted.", sectionId);
+        return ResponseEntity.ok().body(message);
+    }
 
 
 }

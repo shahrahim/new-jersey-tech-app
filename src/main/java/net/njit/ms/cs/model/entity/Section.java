@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -27,14 +28,13 @@ public class Section {
     private String semester;
 
     @ManyToMany
-    @JsonBackReference
-    private Set<Staff> teachingAssistants;
+    private Set<Staff> teachingAssistants = new HashSet<>();
 
     @ManyToMany
-    private Set<Student> students;
+    private Set<Student> students = new HashSet<>();
 
-    @ManyToMany
-    private Set<Room> rooms;
+    @OneToMany(mappedBy = "section", cascade = CascadeType.ALL)
+    private Set<SectionRoom> sectionRooms = new HashSet<>();
 
     private Integer maxEnroll;
 

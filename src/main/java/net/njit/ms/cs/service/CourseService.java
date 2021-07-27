@@ -10,7 +10,6 @@ import net.njit.ms.cs.model.dto.response.CourseResponse;
 import net.njit.ms.cs.model.dto.response.SectionInfo;
 import net.njit.ms.cs.model.entity.Department;
 import net.njit.ms.cs.model.entity.Course;
-import net.njit.ms.cs.model.entity.SectionId;
 import net.njit.ms.cs.repository.DepartmentRepository;
 import net.njit.ms.cs.repository.CourseRepository;
 import org.springframework.stereotype.Service;
@@ -87,10 +86,7 @@ public class CourseService {
         course.getSections().forEach(section -> {
             SectionInfo sectionInfo = new SectionInfo();
             sectionInfo.setNumber(section.getNumber());
-            sectionInfo.setFacultySsn(section.getFacultySsn());
             sectionInfo.setCourseNumber(section.getCourseNumber());
-            sectionInfo.setYear(section.getYear());
-            sectionInfo.setSemester(section.getSemester());
             sections.add(sectionInfo);
         });
         courseResponse.setSections(sections);

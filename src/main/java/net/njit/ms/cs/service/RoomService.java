@@ -7,6 +7,7 @@ import net.njit.ms.cs.exception.ResourceNotDeletedException;
 import net.njit.ms.cs.exception.ResourceNotFoundException;
 import net.njit.ms.cs.model.dto.request.RoomDto;
 import net.njit.ms.cs.model.dto.response.RoomResponse;
+import net.njit.ms.cs.model.dto.response.RoomSectionInfo;
 import net.njit.ms.cs.model.dto.response.SectionInfo;
 import net.njit.ms.cs.model.entity.*;
 import net.njit.ms.cs.repository.BuildingRepository;
@@ -83,14 +84,13 @@ public class RoomService {
         roomResponse.setBuildingNumber(room.getBuildingNumber());
         roomResponse.setAudioVisual(room.getAudioVisual());
 
-        Set<SectionInfo> sections = new HashSet<>();
-        room.getSections().forEach(section -> {
-            SectionInfo sectionInfo = new SectionInfo();
-            sectionInfo.setNumber(section.getNumber());
-            sectionInfo.setFacultySsn(section.getFacultySsn());
-            sectionInfo.setCourseNumber(section.getCourseNumber());
-            sectionInfo.setYear(section.getYear());
-            sectionInfo.setSemester(section.getSemester());
+        Set<RoomSectionInfo> sections = new HashSet<>();
+        room.getSectionRooms().forEach(section -> {
+            RoomSectionInfo sectionInfo = new RoomSectionInfo();
+            sectionInfo.setNumber(section.getSection().getNumber());
+            sectionInfo.setCourseNumber(section.getSection().getCourseNumber());
+            sectionInfo.setWeekday(section.getWeekday());
+            sectionInfo.setTime(section.getTime());
             sections.add(sectionInfo);
         });
         roomResponse.setSections(sections);

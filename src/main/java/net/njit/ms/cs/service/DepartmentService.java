@@ -44,13 +44,16 @@ public class DepartmentService {
 
     public List<Department> getAllDepartments() {
         List<Department> departments = this.departmentRepository.findAll();
+        Set<Staff> nonFaculties = new HashSet<>();
         departments.forEach(department -> {
             department.getFaculties().forEach(faculty -> {
                 if(!faculty.getType().equals(FACULTY)) {
-                    department.getFaculties().remove(faculty);
+//                    department.getFaculties().remove(faculty);
+                    nonFaculties.add(faculty);
                 }
             });
         });
+        nonFaculties.forEach(nonFaculty -> departments.forEach(department -> department.getFaculties().remove(nonFaculty)));
         return departments;
     }
 

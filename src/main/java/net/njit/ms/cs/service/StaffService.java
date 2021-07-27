@@ -6,8 +6,10 @@ import net.njit.ms.cs.exception.ResourceNotCreatedException;
 import net.njit.ms.cs.exception.ResourceNotDeletedException;
 import net.njit.ms.cs.exception.ResourceNotFoundException;
 import net.njit.ms.cs.model.dto.request.StaffDto;
+import net.njit.ms.cs.model.dto.response.CodeDto;
+import net.njit.ms.cs.model.dto.response.SectionInfo;
+import net.njit.ms.cs.model.dto.response.StaffResponse;
 import net.njit.ms.cs.model.entity.Department;
-import net.njit.ms.cs.model.entity.Section;
 import net.njit.ms.cs.model.entity.Staff;
 import net.njit.ms.cs.repository.DepartmentRepository;
 import net.njit.ms.cs.repository.SectionRepository;
@@ -97,6 +99,65 @@ public class StaffService {
             log.error("{} {}", message, e.getMessage());
             throw new ResourceNotCreatedException(message);
         }
+    }
+
+    public static StaffResponse getStaffResponse(Staff staff) {
+
+//        private String ssn;
+//
+//        private String name;
+//
+//        private Set<CodeDto> departments = new HashSet<>();
+//
+//        private Set<SectionInfo> facultySections = new HashSet<>();
+//
+//        private Set<SectionInfo> taSections = new HashSet<>();
+//
+//        private String address;
+//
+//        private Integer salary;
+//
+//        private String type;
+//
+//        private String rank;
+//
+//        private Integer courseLoad;
+//
+//        private Integer workHours;
+
+        StaffResponse staffResponse = new StaffResponse();
+        staffResponse.setSsn(staff.getSsn());
+        staffResponse.setName(staff.getName());
+        staffResponse.setAddress(staff.getAddress());
+        staffResponse.setSalary(staff.getSalary());
+        staffResponse.setType(staff.getType());
+        staffResponse.setRank(staff.getRank());
+        staffResponse.setCourseLoad(staff.getCourseLoad());
+        staffResponse.setWorkHours(staff.getWorkHours());
+
+        Set<CodeDto> departments = new HashSet<>();
+        staff.getDepartments().forEach(department -> departments.add(new CodeDto(department.getCode())));
+        staffResponse.setDepartments(departments);
+
+        Set<SectionInfo> facultySections = new HashSet<>();
+        staff.getFacultySections().forEach(section -> {
+            SectionInfo sectionInfo = new SectionInfo();
+            sectionInfo.setNumber(section.getNumber());
+            sectionInfo.setCourseNumber(section.getCourseNumber());
+            facultySections.add(sectionInfo);
+        });
+        staffResponse.setFacultySections(facultySections);
+
+        Set<SectionInfo> taSections = new HashSet<>();
+        staff.getTaSections().forEach(section -> {
+            SectionInfo sectionInfo = new SectionInfo();
+            sectionInfo.setNumber(section.getNumber());
+            sectionInfo.setCourseNumber(section.getCourseNumber());
+            taSections.add(sectionInfo);
+        });
+        staffResponse.setTaSections(taSections);
+
+        return staffResponse;
     }
 
     private void validateStaffType(StaffDto staffDto) {

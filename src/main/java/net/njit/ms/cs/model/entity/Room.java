@@ -20,8 +20,8 @@ public class Room {
     @Id
     private Integer buildingNumber;
 
-    @ManyToMany(mappedBy = "rooms")
-    private Set<Section> sections = new HashSet<>();
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL)
+    private Set<SectionRoom> sectionRooms = new HashSet<>();
 
     private Integer capacity;
 
