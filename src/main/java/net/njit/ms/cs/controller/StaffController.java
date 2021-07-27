@@ -1,11 +1,14 @@
 package net.njit.ms.cs.controller;
 
 import net.njit.ms.cs.model.dto.request.StaffDto;
+import net.njit.ms.cs.model.dto.response.StaffResponse;
 import net.njit.ms.cs.model.entity.Staff;
+import net.njit.ms.cs.repository.StaffRepository;
 import net.njit.ms.cs.service.StaffService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -19,26 +22,29 @@ public class StaffController {
     }
 
     @GetMapping("/list")
-    public ResponseEntity<List<Staff>> getAllStaff() {
+    public ResponseEntity<List<StaffResponse>> getAllStaff() {
         List<Staff> staffList = this.staffService.getAllStaff();
-        return ResponseEntity.ok().body(staffList);
+        List<StaffResponse> staffResponses = new ArrayList<>();
+        staffList.forEach(staff -> staffResponses.add(StaffService.getStaffResponse(staff)));
+        return ResponseEntity.ok().body(staffResponses);
     }
 
     @GetMapping("/{ssn}")
-    public ResponseEntity<Staff> getStaffById(@PathVariable String ssn) {
+    public ResponseEntity<StaffResponse> getStaffById(@PathVariable String ssn) {
         Staff staff = this.staffService.getStaffById(ssn);
-        return ResponseEntity.ok().body(staff);
+        return ResponseEntity.ok().body(StaffService.getStaffResponse(staff));
     }
 
     @PostMapping
-    public ResponseEntity<Staff> getCreatedStaff(@RequestBody StaffDto staffDto) {
-        return ResponseEntity.created(null).body(this.staffService.getCreatedStaff(staffDto));
+    public ResponseEntity<StaffResponse> getCreatedStaff(@RequestBody StaffDto staffDto) {
+        Staff staff = this.staffService.getCreatedStaff(staffDto);
+        return ResponseEntity.created(null).body(StaffService.getStaffResponse(staff));
     }
 
     @PutMapping("/{ssn}")
-    public ResponseEntity<Staff> getUpdatedStaff(@PathVariable String ssn, @RequestBody StaffDto staffDto) {
+    public ResponseEntity<StaffResponse> getUpdatedStaff(@PathVariable String ssn, @RequestBody StaffDto staffDto) {
         Staff staff = this.staffService.getUpdatedStaff(ssn, staffDto);
-        return ResponseEntity.ok().body(staff);
+        return ResponseEntity.ok().body(StaffService.getStaffResponse(staff));
     }
 
     @DeleteMapping("/{ssn}")

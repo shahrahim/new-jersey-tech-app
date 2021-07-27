@@ -6,13 +6,17 @@ import net.njit.ms.cs.exception.ResourceNotCreatedException;
 import net.njit.ms.cs.exception.ResourceNotDeletedException;
 import net.njit.ms.cs.exception.ResourceNotFoundException;
 import net.njit.ms.cs.model.dto.request.CourseDto;
+import net.njit.ms.cs.model.dto.response.CourseResponse;
+import net.njit.ms.cs.model.dto.response.SectionInfo;
 import net.njit.ms.cs.model.entity.Department;
 import net.njit.ms.cs.model.entity.Course;
 import net.njit.ms.cs.repository.DepartmentRepository;
 import net.njit.ms.cs.repository.CourseRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -48,7 +52,7 @@ public class CourseService {
     public Course getUpdatedCourse(Integer number, CourseDto courseDto) {
         Course course = this.getCourseById(number);
         if (!number.equals(courseDto.getNumber()) ||
-                !course.getDepartment().getCode().equals(courseDto.getDepartmentCode())) {
+                !course.getDepartmentCode().equals(courseDto.getDepartmentCode())) {
             String message = String.format(
                     "Course number: %s or department cannot be changed in update", number);
             log.error(message);
@@ -69,6 +73,27 @@ public class CourseService {
         }
     }
 
+    public static CourseResponse getCourseResponse(Course course) {
+        CourseResponse courseResponse = new CourseResponse();
+
+        courseResponse.setNumber(course.getNumber());
+        courseResponse.setDepartmentCode(course.getDepartmentCode());
+        courseResponse.setName(course.getName());
+        courseResponse.setCredits(course.getCredits());
+        courseResponse.setTaHours(course.getTaHours());
+
+        Set<SectionInfo> sections = new HashSet<>();
+        course.getSections().forEach(section -> {
+            SectionInfo sectionInfo = new SectionInfo();
+            sectionInfo.setNumber(section.getNumber());
+            sectionInfo.setCourseNumber(section.getCourseNumber());
+            sections.add(sectionInfo);
+        });
+        courseResponse.setSections(sections);
+
+        return courseResponse;
+    }
+
     private Course getCreateOrReplacedCourse(Course course) {
         try {
             return this.courseRepository.save(course);
@@ -83,7 +108,7 @@ public class CourseService {
     private Course getNewCourse(CourseDto courseDto) {
         Course course = new Course();
         course.setNumber(courseDto.getNumber());
-        course.setDepartment(this.getDepartmentForCreateRequest(courseDto.getDepartmentCode()));
+        course.setDepartmentCode(this.getDepartmentForCreateRequest(courseDto.getDepartmentCode()).getCode());
         course.setName(courseDto.getName());
         course.setCredits(courseDto.getCredits());
         course.setTaHours(courseDto.getTaHours());

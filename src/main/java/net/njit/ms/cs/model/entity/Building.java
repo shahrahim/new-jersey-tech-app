@@ -17,12 +17,10 @@ public class Building {
     @Id
     private Integer number;
 
-    @JsonBackReference
-    @OneToMany(mappedBy="building", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy="buildingNumber", cascade = CascadeType.ALL)
     private Set<Department> departments = new HashSet<>();
 
-    @JsonBackReference
-    @OneToMany(mappedBy="building", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy="buildingNumber", cascade = CascadeType.ALL)
     private Set<Room> rooms = new HashSet<>();
 
     @NotNull

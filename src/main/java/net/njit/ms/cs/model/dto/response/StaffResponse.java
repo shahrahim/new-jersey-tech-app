@@ -1,34 +1,36 @@
-package net.njit.ms.cs.model.dto.request;
+package net.njit.ms.cs.model.dto.response;
 
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Id;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 import java.util.HashSet;
 import java.util.Set;
 
 @Getter
 @Setter
-public class StaffDto {
+public class StaffResponse {
 
     private String ssn;
 
-    private String type;
-
-    private Set<String> departments = new HashSet<>();
-
     private String name;
+
+    private Set<CodeDto> departments = new HashSet<>();
+
+    private Set<SectionInfo> facultySections = new HashSet<>();
+
+    private Set<SectionInfo> taSections = new HashSet<>();
 
     private String address;
 
     private Integer salary;
+
+    private String type;
 
     private String rank;
 
     private Integer courseLoad;
 
     private Integer workHours;
+
 
 }

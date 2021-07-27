@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
+@IdClass(RoomId.class)
 @Getter
 @Setter
 public class Room {
@@ -16,13 +17,11 @@ public class Room {
     @Id
     private Integer roomNumber;
 
-    @ManyToOne
-    @JsonManagedReference
-    @JoinColumn(name = "buildingNumber")
-    private Building building;
+    @Id
+    private Integer buildingNumber;
 
-    @ManyToMany
-    private Set<Section> sections = new HashSet<>();
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL)
+    private Set<SectionRoom> sectionRooms = new HashSet<>();
 
     private Integer capacity;
 

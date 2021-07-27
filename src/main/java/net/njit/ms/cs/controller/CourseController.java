@@ -1,11 +1,13 @@
 package net.njit.ms.cs.controller;
 
 import net.njit.ms.cs.model.dto.request.CourseDto;
+import net.njit.ms.cs.model.dto.response.CourseResponse;
 import net.njit.ms.cs.model.entity.Course;
 import net.njit.ms.cs.service.CourseService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -19,26 +21,30 @@ public class CourseController {
     }
 
     @GetMapping("/list")
-    public ResponseEntity<List<Course>> getAllCourse() {
+    public ResponseEntity<List<CourseResponse>> getAllCourse() {
         List<Course> courseList = this.courseService.getAllCourse();
-        return ResponseEntity.ok().body(courseList);
+        List<CourseResponse> courseResponses = new ArrayList<>();
+
+        courseList.forEach(course -> courseResponses.add(CourseService.getCourseResponse(course)));
+        return ResponseEntity.ok().body(courseResponses);
     }
 
     @GetMapping("/{number}")
-    public ResponseEntity<Course> getCourseById(@PathVariable Integer number) {
+    public ResponseEntity<CourseResponse> getCourseById(@PathVariable Integer number) {
         Course course = this.courseService.getCourseById(number);
-        return ResponseEntity.ok().body(course);
+        return ResponseEntity.ok().body(CourseService.getCourseResponse(course));
     }
 
     @PostMapping
-    public ResponseEntity<Course> getCreatedCourse(@RequestBody CourseDto courseDto) {
-        return ResponseEntity.created(null).body(this.courseService.getCreatedCourse(courseDto));
+    public ResponseEntity<CourseResponse> getCreatedCourse(@RequestBody CourseDto courseDto) {
+        Course course = this.courseService.getCreatedCourse(courseDto);
+        return ResponseEntity.created(null).body(CourseService.getCourseResponse(course));
     }
 
     @PutMapping("/{number}")
-    public ResponseEntity<Course> getUpdatedCourse(@PathVariable Integer number, @RequestBody CourseDto courseDto) {
+    public ResponseEntity<CourseResponse> getUpdatedCourse(@PathVariable Integer number, @RequestBody CourseDto courseDto) {
         Course course = this.courseService.getUpdatedCourse(number, courseDto);
-        return ResponseEntity.ok().body(course);
+        return ResponseEntity.ok().body(CourseService.getCourseResponse(course));
     }
 
     @DeleteMapping("/{number}")
