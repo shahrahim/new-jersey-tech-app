@@ -6,11 +6,22 @@ import net.njit.ms.cs.exception.ResourceNotCreatedException;
 import net.njit.ms.cs.exception.ResourceNotDeletedException;
 import net.njit.ms.cs.exception.ResourceNotFoundException;
 import net.njit.ms.cs.model.dto.request.BuildingDto;
+import net.njit.ms.cs.model.dto.response.BuildingResponse;
+import net.njit.ms.cs.model.dto.response.CodeDto;
+import net.njit.ms.cs.model.dto.response.NumberDto;
 import net.njit.ms.cs.model.entity.Building;
+import net.njit.ms.cs.model.entity.Department;
+import net.njit.ms.cs.model.entity.Room;
 import net.njit.ms.cs.repository.BuildingRepository;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.validation.constraints.NotNull;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -70,6 +81,46 @@ public class BuildingService {
             log.error("{} {}", message, e.getMessage());
             throw new ResourceNotDeletedException(message);
         }
+    }
+
+    public static BuildingResponse getBuildingResponse(Building building) {
+//        @Id
+//        private Integer number;
+//
+//        @OneToMany(mappedBy="buildingNumber", cascade = CascadeType.ALL)
+//        private Set<Department> departments = new HashSet<>();
+//
+//        @OneToMany(mappedBy="buildingNumber", cascade = CascadeType.ALL)
+//        private Set<Room> rooms = new HashSet<>();
+//
+//        @NotNull
+//        private String name;
+//
+//        private String location;
+
+        BuildingResponse buildingResponse = new BuildingResponse();
+        buildingResponse.setNumber(building.getNumber());
+        buildingResponse.setName(building.getName());
+        buildingResponse.setLocation(building.getLocation());
+
+        Set<CodeDto> departments = new HashSet<>();
+        building.getDepartments().forEach(department -> {
+            CodeDto codeDto = new CodeDto();
+            codeDto.setCode(department.getCode());
+            departments.add(codeDto);
+        });
+        buildingResponse.setDepartments(departments);
+
+        Set<NumberDto> rooms = new HashSet<>();
+        building.getRooms().forEach(room -> {
+            NumberDto numberDto = new NumberDto();
+            numberDto.setNumber(room.getRoomNumber());
+            rooms.add(numberDto);
+        });
+        buildingResponse.setRooms(rooms);
+
+        return buildingResponse;
+
     }
 
     private Building getCreateOrReplacedBuilding(Building building) {

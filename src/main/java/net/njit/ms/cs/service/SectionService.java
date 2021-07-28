@@ -13,6 +13,7 @@ import net.njit.ms.cs.model.entity.*;
 import net.njit.ms.cs.repository.*;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.ManyToOne;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,6 +33,7 @@ public class SectionService {
 
     private static final String TA = "TA";
     private static final String FACULTY = "Faculty";
+    private static final Integer MAX_COURSES = 2;
 
     public SectionService(SectionRepository sectionRepository,
                           CourseRepository courseRepository,
@@ -64,6 +66,49 @@ public class SectionService {
                         "Section with number: %s and courseNumber: %s not found",
                         sectionNumber, courseNumber)));
     }
+
+    public Section getStudentRegisteredSectionByCourseAndTime(String sid, Integer courseNumber, String time) {
+        List<Section> sections = this.sectionRepository.findAllByCourseNumber(courseNumber);
+
+        Student student = this.studentService.getStudentById(sid);
+
+
+        Section targetSection = null;
+
+        for (Section s : sections) {
+            for (SectionRoom sr : s.getSectionRooms()) {
+                if (sr.getTime().equals(time)) {
+                    targetSection = s;
+                    break;
+                }
+            }
+        }
+        if (targetSection == null) {
+            throw new BadRequestRequestException(String.format("Course number %s does not contain time %s",
+                    courseNumber, time));
+        } else if (targetSection.getStudents().size() >= targetSection.getMaxEnroll()) {
+            throw new BadRequestRequestException(String.format("Section %s is already full", targetSection.getNumber()));
+        }
+        Section finalTargetSection = targetSection;
+        handleInvalidRegistration(finalTargetSection.getCourseNumber(),
+                finalTargetSection.getYear(), finalTargetSection.getSemester(), student);
+        targetSection.getStudents().add(student);
+        return this.getCreateOrReplacedSection(targetSection);
+    }
+
+    public Section getStudentRegisteredSectionBySection(String sid, Integer sectionNumber) {
+        Section section = this.sectionRepository.findByNumber(sectionNumber).orElseThrow(
+                () -> new BadRequestRequestException(String.format("Section number %s does not exist", sectionNumber)));
+        Student student = this.studentService.getStudentById(sid);
+
+        if (section.getStudents().size() >= section.getMaxEnroll()) {
+            throw new BadRequestRequestException(String.format("Section %s is already full", section.getNumber()));
+        }
+        handleInvalidRegistration(section.getCourseNumber(), section.getYear(), section.getSemester(), student);
+        section.getStudents().add(student);
+        return this.getCreateOrReplacedSection(section);
+    }
+
 
     public Section getCreatedSection(SectionDto sectionDto) {
         Integer sectionNumber = sectionDto.getNumber();
@@ -102,7 +147,7 @@ public class SectionService {
         sectionRoomId.setWeekday(sectionRoomDto.getWeekday());
         sectionRoomId.setTime(sectionRoomDto.getTime());
 
-        if(this.sectionRoomRepository.existsById(sectionRoomId)) {
+        if (this.sectionRoomRepository.existsById(sectionRoomId)) {
             String message = String.format("SectionRoom with weekday and time already exists");
             log.error(message);
             throw new BadRequestRequestException(message);
@@ -143,9 +188,9 @@ public class SectionService {
         sectionResponse.setNumber(section.getNumber());
         sectionResponse.setFacultySsn(section.getFacultySsn());
         sectionResponse.setCourseNumber(section.getCourseNumber());
-        section.setMaxEnroll(section.getMaxEnroll());
         sectionResponse.setSemester(section.getSemester());
         sectionResponse.setYear(section.getYear());
+        sectionResponse.setMaxEnroll(section.getMaxEnroll());
 
         Set<SectionRoomInfo> rooms = new HashSet<>();
         section.getSectionRooms().forEach(room -> {
@@ -213,6 +258,24 @@ public class SectionService {
         }
     }
 
+    private void handleInvalidRegistration(Integer courseNumber, String year, String semester, Student student) {
+        student.getSections().forEach(section -> {
+            if (section.getCourseNumber().equals(courseNumber)
+                    && section.getYear().equals(year)
+                    && section.getSemester().equals(semester)) {
+                throw new BadRequestRequestException(String.format(
+                        "Student cannot register for course %s in the same semester %s and year %s",
+                        courseNumber, semester, year));
+            }
+        });
+
+        if(student.getSections().size() >= MAX_COURSES) {
+            throw new BadRequestRequestException(String.format(
+                    "Student %s cannot register for more than %s classes", student.getSid(), MAX_COURSES));
+
+        }
+    }
+
     private void handleSectionUpdate(Section section, SectionUpdateDto sectionUpdateDto) {
         sectionUpdateDto.getTeachingAssistantsToRemove().forEach(teachingAssistantSsn -> {
             Staff teachingAssistant = this.staffService
@@ -251,11 +314,18 @@ public class SectionService {
         section.setFacultySsn(this.getStaffForRequest(sectionDto.getFacultySsn(), FACULTY).getSsn());
         section.setCourseNumber(this.getCourseForRequest(sectionDto.getCourseNumber()).getNumber());
         section.setTeachingAssistants(this.getTeachingAssistantsForRequest(sectionDto.getTeachingAssistantSsns()));
-        section.setStudents(this.getStudentsForRequest(sectionDto.getStudents()));
         section.setMaxEnroll(sectionDto.getMaxEnroll());
         section.setSemester(sectionDto.getSemester());
         section.setYear(sectionDto.getYear());
+
+        Set<Student> students = this.getStudentsForRequest(sectionDto.getStudents());
+
+        students.forEach(student -> handleInvalidRegistration(sectionDto.getCourseNumber(),
+                sectionDto.getYear(), sectionDto.getSemester(), student));
+
         return section;
+
+
     }
 
     private Set<Staff> getTeachingAssistantsForRequest(Set<String> ssns) {
@@ -283,7 +353,6 @@ public class SectionService {
 
     private Set<Student> getStudentsForRequest(Set<String> sids) {
         Set<Student> students = new HashSet<>();
-
         sids.forEach(sid -> {
             students.add(this.studentRepository.findById(sid).orElseThrow(
                     () -> new ResourceNotFoundException(String.format(

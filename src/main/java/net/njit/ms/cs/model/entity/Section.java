@@ -16,6 +16,7 @@ import java.util.Set;
 public class Section {
 
     @Id
+    @Column(unique = true)
     private Integer number;
 
     @Id

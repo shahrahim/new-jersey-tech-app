@@ -1,5 +1,6 @@
 package net.njit.ms.cs.controller;
 
+import net.njit.ms.cs.exception.BadRequestRequestException;
 import net.njit.ms.cs.model.dto.request.SectionDto;
 import net.njit.ms.cs.model.dto.request.SectionRoomDto;
 import net.njit.ms.cs.model.dto.request.SectionUpdateDto;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/section")
@@ -60,6 +62,29 @@ public class SectionController {
     public ResponseEntity<SectionResponse> getUpdatedSection(@RequestBody SectionUpdateDto sectionDto) {
         Section section = this.sectionService.getUpdatedSection(sectionDto);
         return ResponseEntity.ok().body(SectionService.getSectionResponse(section));
+    }
+
+    @PutMapping("/registration/{sid}")
+    public ResponseEntity<SectionResponse> getUpdatedSectionWithRegistration(@PathVariable String sid,
+                                                                             @RequestParam Optional<Integer> courseNumber,
+                                                                             @RequestParam Optional<String> time,
+                                                                             @RequestParam Optional<Integer> sectionNumber) {
+        if(courseNumber.isPresent() && time.isPresent() && sectionNumber.isPresent()) {
+            throw new BadRequestRequestException("In registration, all params cannot be defined");
+        }
+
+        if(courseNumber.isPresent() && time.isPresent()) {
+            Section section = this.sectionService.getStudentRegisteredSectionByCourseAndTime(sid,
+                    courseNumber.get(), time.get());
+            return ResponseEntity.ok().body(SectionService.getSectionResponse(section));
+        }
+
+        if(sectionNumber.isPresent()) {
+            Section section = this.sectionService.getStudentRegisteredSectionBySection(sid, sectionNumber.get());
+            return ResponseEntity.ok().body(SectionService.getSectionResponse(section));
+        }
+
+        throw new BadRequestRequestException("Registration is not valid");
     }
 
     @DeleteMapping
